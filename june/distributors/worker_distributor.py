@@ -356,6 +356,7 @@ class WorkerDistributor:
         sex_per_sector_file: str = default_sex_per_sector_per_superarea_file,
         config_file: str = default_config_file,
         policy_config_file: str = default_policy_config_file,
+        areas_map_path: str = None
     ) -> "WorkerDistributor":
         """ """
         return cls.from_file(
@@ -364,6 +365,7 @@ class WorkerDistributor:
             sex_per_sector_file,
             config_file,
             policy_config_file,
+            areas_map_path
         )
 
     @classmethod
@@ -374,6 +376,7 @@ class WorkerDistributor:
         sex_per_sector_file: str = default_sex_per_sector_per_superarea_file,
         config_file: str = default_config_file,
         policy_config_file: str = default_policy_config_file,
+        areas_map_path: str or None = None
     ) -> "WorkerDistributor":
         """
         Parameters
@@ -390,7 +393,10 @@ class WorkerDistributor:
         if area_names is None:
             area_names = []
         workflow_df = load_workflow_df(workflow_file, area_names)
-        sex_per_sector_df = load_sex_per_sector(sex_per_sector_file, area_names)
+        sex_per_sector_df = load_sex_per_sector(
+            sex_per_sector_file, 
+            area_names,
+            areas_map_path=areas_map_path)
         with open(config_file) as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
         with open(policy_config_file) as f:
@@ -434,6 +440,7 @@ def load_workflow_df(
 def load_sex_per_sector(
     sector_by_sex_file: str = default_sex_per_sector_per_superarea_file,
     area_names: Optional[List[str]] = None,
+    areas_map_path: str = None
 ) -> pd.DataFrame:
     sector_by_sex_df = pd.read_csv(sector_by_sex_file, index_col=0)
     # define all columns in csv file relateing to males
@@ -450,7 +457,7 @@ def load_sex_per_sector(
     )
 
     if area_names:
-        geo_hierarchy = pd.read_csv(default_areas_map_path)
+        geo_hierarchy = pd.read_csv(areas_map_path)
         area_names = geo_hierarchy[geo_hierarchy["super_area"].isin(area_names)]["area"]
         sector_by_sex_df = sector_by_sex_df.loc[area_names]
         if (np.sum(sector_by_sex_df["m Q"]) == 0) and (
