@@ -442,22 +442,17 @@ def load_sex_per_sector(
     area_names: Optional[List[str]] = None,
     areas_map_path: str = None
 ) -> pd.DataFrame:
+
     sector_by_sex_df = pd.read_csv(sector_by_sex_file, index_col=0)
     # define all columns in csv file relateing to males
     m_columns = [col for col in sector_by_sex_df.columns.values if "m " in col]
-    m_columns.remove("m all")
-    m_columns.remove("m R S T U")
     f_columns = [col for col in sector_by_sex_df.columns.values if "f " in col]
-    f_columns.remove("f all")
-    f_columns.remove("f R S T U")
-
-    uni_columns = [col for col in sector_by_sex_df.columns.values if "all " in col]
-    sector_by_sex_df = sector_by_sex_df.drop(
-        uni_columns + ["m all", "m R S T U", "f all", "f R S T U"], axis=1
-    )
 
     if area_names:
-        geo_hierarchy = pd.read_csv(areas_map_path)
+        if areas_map_path is None:
+            geo_hierarchy = pd.read_csv(default_areas_map_path)
+        else:
+            geo_hierarchy = pd.read_csv(areas_map_path)
         area_names = geo_hierarchy[geo_hierarchy["super_area"].isin(area_names)]["area"]
         sector_by_sex_df = sector_by_sex_df.loc[area_names]
         if (np.sum(sector_by_sex_df["m Q"]) == 0) and (
