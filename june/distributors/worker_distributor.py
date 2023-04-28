@@ -47,7 +47,7 @@ class WorkerDistributor:
         age_range: List[int],
         sub_sector_ratio: dict,
         sub_sector_distr: dict,
-        non_geographical_work_location: dict,
+        non_geographical_work_location: dict = None,
     ):
         """
         Parameters
