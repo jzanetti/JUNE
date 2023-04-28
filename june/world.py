@@ -68,6 +68,11 @@ class World:
         self.universities = None
         self.cities = None
         self.stations = None
+        self.workflow_file = None
+        self.sex_per_sector_file = None
+        self.config_file = None
+        self.policy_config_file = None
+        self.areas_map_path = None
 
     def __iter__(self):
         ret = []
@@ -99,13 +104,21 @@ class World:
             )
 
         if include_households:
-            household_distributor = HouseholdDistributor.from_file()
+            household_distributor = HouseholdDistributor.from_file(
+                husband_wife_filename = include_households["age_difference_couple"],
+                parent_child_filename = include_households["age_difference_parent_child"],
+                config_filename = include_households["household_structure"]["cfg"],
+                number_of_random_numbers=int(1e3)
+            )
 
             self.households = (
-                household_distributor.distribute_people_and_households_to_areas(
-                    self.areas
+                    household_distributor.distribute_people_and_households_to_areas(
+                        self.areas,
+                        number_households_per_composition_filename = include_households["household_structure"]["data"],
+                        n_students_filename = include_households["household_student"],
+                        n_people_in_communal_filename = include_households["household_commual"]
+                    )
                 )
-            )
 
         if self.schools is not None:
             school_distributor = SchoolDistributor(self.schools)
@@ -182,6 +195,6 @@ def generate_world_from_geography(
         geography_group = getattr(geography, possible_group)
         if geography_group is not None:
             setattr(world, possible_group, geography_group)
-    world.distribute_people(include_households=include_households)
+    # world.distribute_people(include_households=include_households)
     world.cemeteries = Cemeteries()
     return world

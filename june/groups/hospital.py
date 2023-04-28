@@ -267,7 +267,7 @@ class Hospitals(Supergroup, MedicalFacilities):
         with open(config_filename) as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
         neighbour_hospitals = config["neighbour_hospitals"]
-        hospital_df = pd.read_csv(filename, index_col=4)
+        hospital_df = pd.read_csv(filename, index_col='area')
         area_names = [area.name for area in geography.areas]
         hospital_df = hospital_df.loc[hospital_df.index.isin(area_names)]
         logger.info(f"There are {len(hospital_df)} hospitals in this geography.")
