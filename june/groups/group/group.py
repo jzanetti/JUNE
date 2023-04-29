@@ -84,8 +84,14 @@ class Group(AbstractGroup):
         """
         self.id = self._next_id()
         self.spec = self.get_spec()
+
+        if self.spec in ["cemetery"]:
+            subgroup_type_str = ["default"]
+        else:
+            subgroup_type_str = self.subgroup_params.subgroup_labels(self.spec)
+
         self.SubgroupType = IntEnum(
-            "SubgroupType", self.subgroup_params.subgroup_labels(self.spec), start=0
+            "SubgroupType", subgroup_type_str, start=0
         )
         # noinspection PyTypeChecker
         self.subgroups = [Subgroup(self, i) for i in range(len(self.SubgroupType))]

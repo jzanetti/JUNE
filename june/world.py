@@ -196,5 +196,5 @@ def generate_world_from_geography(
         if geography_group is not None:
             setattr(world, possible_group, geography_group)
     # world.distribute_people(include_households=include_households)
-    # world.cemeteries = Cemeteries()
+    world.cemeteries = Cemeteries()
     return world
