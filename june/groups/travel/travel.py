@@ -30,11 +30,13 @@ class Travel:
         city_super_areas_filename=default_cities_filename,
         city_stations_filename=default_city_stations_config_filename,
         commute_config_filename=default_commute_config_filename,
-        travel_mode_filename=None
+        travel_mode_filename = None,
+        public_or_private_transport = None
     ):
         self.city_super_areas_filename = city_super_areas_filename
         self.city_stations_filename = city_stations_filename
         self.travel_mode_filename = travel_mode_filename
+        self.public_or_private_transport = public_or_private_transport
         with open(commute_config_filename) as f:
             self.commute_config = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -91,7 +93,8 @@ class Travel:
         """
         logger.info("Determining people mode of transport")
         mode_of_transport_generator = ModeOfTransportGenerator.from_file(
-            filename=self.travel_mode_filename
+            filename=self.travel_mode_filename,
+            config_filename=self.public_or_private_transport
         )
         for i, area in enumerate(world.areas):
             if i % 4000 == 0:
