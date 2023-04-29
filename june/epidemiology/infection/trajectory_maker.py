@@ -237,6 +237,10 @@ class TrajectoryMakers:
         configurations we'd need to be careful as this could give unexpected
         effects.
         """
+        from os.path import exists
+        if not exists(config_path):
+            return None
+
         if cls.__instance is None or cls.__path != config_path:
             with open(config_path) as f:
                 cls.__instance = TrajectoryMakers.from_list(

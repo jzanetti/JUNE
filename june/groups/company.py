@@ -222,6 +222,11 @@ class Companies(Supergroup):
 
 
 def _read_sector_betas():
+
+    from os.path import exists
+    if not exists(default_config_filename):
+        return None
+
     with open(default_config_filename) as f:
         sector_betas = yaml.load(f, Loader=yaml.FullLoader) or {}
     return sector_betas
