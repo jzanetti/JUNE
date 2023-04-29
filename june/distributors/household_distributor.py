@@ -729,13 +729,13 @@ class HouseholdDistributor:
             Maximum number of people allowed in the household.
 
         """
-        from june.groups.group.make_subgroups import SubgroupParams
-        my_household= Household
-        my_household.subgroup_params = SubgroupParams.from_file(
-            config_filename=self.household_interaction_filename
-        )
+        #from june.groups.group.make_subgroups import SubgroupParams
+        #my_household= Household
+        #my_household.subgroup_params = SubgroupParams.from_file(
+        #    config_filename=self.household_interaction_filename
+        #)
 
-        household = my_household(
+        household = Household(
             type=type,
             max_size=max_household_size,
             area=area,
