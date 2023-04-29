@@ -149,7 +149,7 @@ class WorkerDistributor:
         )
         self.work_msoa_woman_rnd = work_msoa_woman_rv.rvs(size=n_workers)
         # companies data
-        numbers = np.arange(1, 22)
+        numbers = np.arange(1, 1+len(m_col))
         m_col = [col for col in self.sex_per_sector_df.columns.values if "m " in col]
 
         f_col = [col for col in self.sex_per_sector_df.columns.values if "f " in col]
