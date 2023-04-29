@@ -98,6 +98,7 @@ class Epidemiology:
         infected_ids: list = None,
         infection_ids: list = None,
         people_from_abroad_dict: dict = None,
+        trajectory_filename: str = None
     ):
         if self.vaccination_campaigns is not None and (
             self.current_date is None or timer.date.date() != self.current_date.date()
@@ -115,6 +116,7 @@ class Epidemiology:
                 infected_ids=infected_ids,
                 infection_ids=infection_ids,
                 people_from_abroad_dict=people_from_abroad_dict,
+                trajectory_filename=trajectory_filename
             )
             self.tell_domains_to_infect(
                 world=world, timer=timer, infect_in_domains=infect_in_domains
@@ -244,7 +246,8 @@ class Epidemiology:
                     )
 
     def infect_people(
-        self, world, time, infected_ids, infection_ids, people_from_abroad_dict
+        self, world, time, infected_ids, infection_ids, people_from_abroad_dict,
+        trajectory_filename: str = None
     ):
         """
         Given a list of infected ids, it initialises an infection object for them
@@ -257,7 +260,7 @@ class Epidemiology:
             if person_id in world.people.people_ids:
                 person = world.people.get_from_id(person_id)
                 self.infection_selectors.infect_person_at_time(
-                    person=person, time=time, infection_id=infection_id
+                    person=person, time=time, infection_id=infection_id, trajectory_filename=trajectory_filename
                 )
             else:
                 foreign_ids.append(person_id)

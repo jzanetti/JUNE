@@ -132,6 +132,7 @@ class Simulator:
         config_filename: str = default_config_filename,
         checkpoint_save_path: str = None,
         record: Optional[Record] = None,
+        trajectory_filename: str = None
     ) -> "Simulator":
 
         """
@@ -174,6 +175,7 @@ class Simulator:
             record=record,
             checkpoint_save_dates=checkpoint_save_dates,
             checkpoint_save_path=checkpoint_save_path,
+            trajectory_filename=trajectory_filename
         )
 
     @classmethod
@@ -340,6 +342,7 @@ class Simulator:
             infected_ids=infected_ids,
             infection_ids=infection_ids,
             people_from_abroad_dict=people_from_abroad_dict,
+            trajectory_filename=self.trajectory_filename
         )
 
         tick, tickw = perf_counter(), wall_clock()
