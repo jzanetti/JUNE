@@ -145,7 +145,7 @@ class HealthIndexGenerator:
                 probabilities = self.apply_effective_multiplier(
                     probabilities, effective_multiplier
                 )
-        return np.cumsum(probabilities)
+        return np.nancumsum(probabilities)
 
     def apply_effective_multiplier(self, probabilities, effective_multiplier):
         modified_probabilities = np.zeros_like(probabilities)
