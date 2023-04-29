@@ -81,6 +81,7 @@ class Simulator:
         record: Optional[Record] = None,
         checkpoint_save_dates: List[datetime.date] = None,
         checkpoint_save_path: str = None,
+        trajectory_filename: str = None
     ):
         """
         Class to run an epidemic spread simulation on the world.
@@ -117,6 +118,7 @@ class Simulator:
         self.record = record
         if self.record is not None and self.record.record_static_data:
             self.record.static_data(world=world)
+        self.trajectory_filename = trajectory_filename
 
     @classmethod
     def from_file(
@@ -392,7 +394,8 @@ class Simulator:
         while self.timer.date < self.timer.final_date:
             if self.epidemiology:
                 self.epidemiology.infection_seeds_timestep(
-                    self.timer, record=self.record
+                    self.timer, record=self.record,
+                    trajectory_filename=self.trajectory_filename
                 )
             mpi_comm.Barrier()
             if mpi_rank == 0:

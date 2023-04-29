@@ -84,10 +84,10 @@ class Epidemiology:
         if activity_manager.policies:
             self.medical_care_policies = activity_manager.policies.medical_care_policies
 
-    def infection_seeds_timestep(self, timer, record: Record = None):
+    def infection_seeds_timestep(self, timer, record: Record = None, trajectory_filename: str = None):
         if self.infection_seeds:
             self.infection_seeds.unleash_virus_per_day(
-                date=timer.date, record=record, time=timer.now
+                date=timer.date, record=record, time=timer.now, trajectory_filename=trajectory_filename
             )
 
     def do_timestep(
