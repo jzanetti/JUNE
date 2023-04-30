@@ -21,8 +21,6 @@ from june.records import Record
 from june.world import World
 from june.mpi_setup import mpi_comm, mpi_size, mpi_rank
 
-from pandas import concat
-
 default_config_filename = paths.configs_path / "config_example.yaml"
 
 output_logger = logging.getLogger("simulator")
@@ -418,7 +416,7 @@ class Simulator:
                 self.save_checkpoint(saving_date)
             next(self.timer)
         
-        return concat(output)
+        return output
 
     def save_checkpoint(self, saving_date):
         from june.hdf5_savers.checkpoint_saver import save_checkpoint_to_hdf5
