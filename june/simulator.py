@@ -20,6 +20,7 @@ from june.time import Timer
 from june.records import Record
 from june.world import World
 from june.mpi_setup import mpi_comm, mpi_size, mpi_rank
+from copy import deepcopy
 
 default_config_filename = paths.configs_path / "config_example.yaml"
 
@@ -399,7 +400,7 @@ class Simulator:
                     self.timer, record=self.record,
                     trajectory_filename=self.trajectory_filename
                 )
-            output.append({self.timer.date: self.world})
+            output.append({self.timer.date: deepcopy(self.world)})
             mpi_comm.Barrier()
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
