@@ -113,6 +113,7 @@ class InteractiveGroup:
                     ]["trans_probs"].append(people_abroad_data[id]["inf_prob"])
         self.must_timestep = self.has_susceptible and self.has_infectors
         self.size = group_size
+        self.interaction_path = None
 
     @classmethod
     def get_raw_contact_matrix(

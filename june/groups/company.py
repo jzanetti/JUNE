@@ -221,19 +221,18 @@ class Companies(Supergroup):
         return company
 
 
-def _read_sector_betas():
+def _read_sector_betas(config_path: str = default_config_filename):
 
     from os.path import exists
-    if not exists(default_config_filename):
+    if not exists(config_path):
         return None
 
-    with open(default_config_filename) as f:
+    with open(config_path) as f:
         sector_betas = yaml.load(f, Loader=yaml.FullLoader) or {}
     return sector_betas
 
 
 class InteractiveCompany(InteractiveGroup):
-    sector_betas = _read_sector_betas()
 
     def __init__(self, group: "Group", people_from_abroad=None):
         super().__init__(group=group, people_from_abroad=people_from_abroad)
@@ -243,4 +242,8 @@ class InteractiveCompany(InteractiveGroup):
         beta_processed = super().get_processed_beta(
             betas=betas, beta_reductions=beta_reductions
         )
-        return beta_processed * self.sector_betas.get(self.sector, 1.0)
+
+        sector_betas = _read_sector_betas(
+            config_path = InteractiveGroup.interaction_path)
+
+        return beta_processed * sector_betas.get(self.sector, 1.0)
