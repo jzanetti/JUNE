@@ -399,7 +399,7 @@ class Simulator:
                     self.timer, record=self.record,
                     trajectory_filename=self.trajectory_filename
                 )
-            output.append(self.world)
+            output.append({self.timer.date: self.world})
             mpi_comm.Barrier()
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
