@@ -145,7 +145,11 @@ class Cities(Supergroup):
             if type(super_area_names) == str:
                 super_area_names = [super_area_names]
             else:
-                super_area_names = super_area_names.values.astype(str)
+                try:
+                    super_area_names = super_area_names.values.astype(str)
+                except AttributeError:
+                    super_area_names = str(super_area_names)
+
             city = City(name=city, super_areas=super_area_names)
             lats = []
             lons = []
