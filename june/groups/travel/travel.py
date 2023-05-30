@@ -51,6 +51,11 @@ class Travel:
         commuters_dict = self._get_city_commuters(
             world=world, city_stations_filename=self.city_stations_filename
         )
+
+        for super_area in commuters_dict:
+            if len(commuters_dict[super_area]["internal"]) == 0:
+                commuters_dict[super_area]["internal"] = [1]
+
         self._create_stations(
             world=world,
             commuters_dict=commuters_dict,
@@ -102,7 +107,7 @@ class Travel:
                     f"Mode of transport allocated in {i} of {len(world.areas)} areas."
                 )
             mode_of_transport_generator_area = (
-                mode_of_transport_generator.regional_gen_from_area(area.name)
+                mode_of_transport_generator.regional_gen_from_area(str(area.name))
             )
             for person in area.people:
                 if person.age < 18 or person.age >= 65:

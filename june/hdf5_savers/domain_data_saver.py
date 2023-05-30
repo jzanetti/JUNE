@@ -40,7 +40,7 @@ def save_data_for_domain_decomposition(world: World, file_path: str):
     super_area_commuters = []
     commuters_per_super_area = get_commuters_per_super_area(world)
     for super_area in world.super_areas:
-        super_area_names.append(super_area.name.encode("ascii", "ignore"))
+        super_area_names.append(str(super_area.name).encode("ascii", "ignore"))
         super_area_population.append(len(super_area.people))
         super_area_workers.append(len(super_area.workers))
         super_area_pupils.append(

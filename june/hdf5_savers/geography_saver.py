@@ -75,7 +75,7 @@ def save_geography_to_hdf5(geography: Geography, file_path: str):
     for area in geography.areas:
         area_ids.append(area.id)
         area_super_areas.append(area.super_area.id)
-        area_names.append(area.name.encode("ascii", "ignore"))
+        area_names.append(str(area.name).encode("ascii", "ignore"))
         area_coordinates.append(np.array(area.coordinates, dtype=np.float64))
         area_socioeconomic_indices.append(area.socioeconomic_index)
         social_venues_ids = []
@@ -105,7 +105,7 @@ def save_geography_to_hdf5(geography: Geography, file_path: str):
 
     for super_area in geography.super_areas:
         super_area_ids.append(super_area.id)
-        super_area_names.append(super_area.name.encode("ascii", "ignore"))
+        super_area_names.append(str(super_area.name).encode("ascii", "ignore"))
         super_area_regions.append(super_area.region.id)
         super_area_coordinates.append(np.array(super_area.coordinates))
         super_area_n_people.append(len(super_area.people))
