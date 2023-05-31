@@ -97,7 +97,12 @@ def read_comorbidity_csv(filename: str):
         no_comorbidity = comorbidity_df[column].loc["no_condition"]
         should_have_comorbidity = 1 - no_comorbidity
         has_comorbidity = np.sum(comorbidity_df[column]) - no_comorbidity
-        comorbidity_df[column].iloc[:-1] *= should_have_comorbidity / has_comorbidity
+        if no_comorbidity == 1.0:
+            adjust_k = 1.0
+        else:
+            adjust_k = should_have_comorbidity / has_comorbidity
+
+        comorbidity_df[column].iloc[:-1] *= adjust_k
 
     return comorbidity_df.T
 
