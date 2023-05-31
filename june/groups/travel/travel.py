@@ -52,9 +52,9 @@ class Travel:
             world=world, city_stations_filename=self.city_stations_filename
         )
 
-        for super_area in commuters_dict:
-            if len(commuters_dict[super_area]["internal"]) == 0:
-                commuters_dict[super_area]["internal"] = [1]
+        #for super_area in commuters_dict:
+        #    if len(commuters_dict[super_area]["internal"]) == 0:
+        #        commuters_dict[super_area]["internal"] = [1]
 
         self._create_stations(
             world=world,
@@ -201,6 +201,9 @@ class Travel:
                         n_internal_commuters / maximum_number_commuters_per_city_station
                     )
                 )
+                if n_city_stations == 0:
+                    n_city_stations = 1
+ 
                 city.city_stations = Stations.from_city_center(
                     city=city,
                     super_areas=world.super_areas,
