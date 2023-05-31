@@ -203,7 +203,14 @@ class HealthIndexGenerator:
             to_keep_sum = p[population][sex][age][5:].sum()
             to_adjust_sum = p[population][sex][age][:5].sum()
             target_adjust_sum = max(1 - to_keep_sum, 0)
-            p[population][sex][age][:5] *= target_adjust_sum / to_adjust_sum
+
+            k = target_adjust_sum / to_adjust_sum
+
+            # e.g., if the death rate is 100% ..., there is no need to adjust anything
+            if np.isnan(k):
+                k = 1.0
+
+            p[population][sex][age][:5] *= k
 
     def _get_probabilities(self, max_age=99):
         n_outcomes = 8
