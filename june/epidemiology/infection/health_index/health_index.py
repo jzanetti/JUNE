@@ -154,16 +154,25 @@ class HealthIndexGenerator:
             1 - probabilities.sum()
         )
         modified_probability_severe = probability_severe * effective_multiplier
-        modified_probability_mild = 1.0 - modified_probability_severe
+        if probability_mild == 0.0: # just in case if the severe rate is 100%
+            k_mild = 1.0
+        else:
+            modified_probability_mild = 1.0 - modified_probability_severe
+            k_mild = modified_probability_mild / probability_mild
+
         modified_probabilities[: self.max_mild_symptom_tag] = (
             probabilities[: self.max_mild_symptom_tag]
-            * modified_probability_mild
-            / probability_mild
+            * k_mild
         )
+
+        if probability_severe == 0.0: # just in case if the severe rate is 0.0%
+            k_severe = 1.0
+        else:
+            k_severe = modified_probability_severe / probability_severe
+
         modified_probabilities[self.max_mild_symptom_tag :] = (
             probabilities[self.max_mild_symptom_tag :]
-            * modified_probability_severe
-            / probability_severe
+            * k_severe
         )
         return modified_probabilities
 
