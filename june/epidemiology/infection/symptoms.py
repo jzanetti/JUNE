@@ -50,7 +50,7 @@ class Symptoms:
         trajectory_maker = TrajectoryMakers.from_file(config_path=trajectory_filename)
         index_max_symptoms_tag = np.searchsorted(health_index, self.max_severity)
 
-        if index_max_symptoms_tag > len(health_index):
+        if index_max_symptoms_tag >= len(health_index):
             # if index_max_symptoms_tag larger than the length of health index, we use the nearest one
             _, nearest_index = min(
                 health_index, key=lambda health_index: abs(health_index - self.max_severity)
