@@ -394,13 +394,20 @@ class Simulator:
             )
 
         output = []
+        recorded_time = []
         while self.timer.date < self.timer.final_date:
             if self.epidemiology:
                 self.epidemiology.infection_seeds_timestep(
                     self.timer, record=self.record,
                     trajectory_filename=self.trajectory_filename
                 )
-            output.append({self.timer.date: deepcopy(self.world)})
+
+            proc_timer = self.timer.date.strftime("%Y%m%d")
+            if proc_timer not in recorded_time:
+                output.append({self.timer.date: deepcopy(self.world)})
+
+            recorded_time.append(proc_timer)
+
             mpi_comm.Barrier()
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
