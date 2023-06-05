@@ -231,7 +231,7 @@ class Simulator:
             person.busy = False
             person.subgroups.leisure = None
 
-    def do_timestep(self):
+    def do_timestep(self, save_timestep):
         """
         Perform a time step in the simulation. First, ActivityManager is called
         to send people to the corresponding subgroups according to the current daytime.
@@ -369,6 +369,10 @@ class Simulator:
             )
 
         # remove everyone from their active groups
+        proc_world = None
+        if save_timestep:
+            proc_world = deepcopy(self.world)
+
         self.clear_world()
         tock, tockw = perf_counter(), wall_clock()
         output_logger.info(
@@ -377,7 +381,9 @@ class Simulator:
         )
         mpi_logger.info(f"{self.timer.date},{mpi_rank},timestep,{tock-tick_s}")
 
-    def run(self):
+        return proc_world
+
+    def run(self, save_timestep: bool = False):
         """
         Run simulation with n_seed initial infections
         """
@@ -393,25 +399,34 @@ class Simulator:
                 activity_manager=self.activity_manager,
             )
 
-        output = []
+        output = {}
+        output_timestep = {}
         recorded_time = []
         while self.timer.date < self.timer.final_date:
+
+            proc_timer = self.timer.date.strftime("%Y%m%d")
+
             if self.epidemiology:
                 self.epidemiology.infection_seeds_timestep(
                     self.timer, record=self.record,
                     trajectory_filename=self.trajectory_filename
                 )
 
-            proc_timer = self.timer.date.strftime("%Y%m%d")
-            if proc_timer not in recorded_time:
-                output.append({self.timer.date: deepcopy(self.world)})
 
             recorded_time.append(proc_timer)
 
             mpi_comm.Barrier()
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
-            self.do_timestep()
+            proc_world = self.do_timestep(save_timestep)
+
+            if proc_timer not in recorded_time:
+                output[self.timer.date] = deepcopy(self.world)
+
+                if save_timestep:
+                    output_timestep[self.timer.date] = deepcopy(proc_world)
+                recorded_time.append(proc_timer)
+
             if (
                 self.timer.date.date() in self.checkpoint_save_dates
                 and (self.timer.now + self.timer.duration).is_integer()
@@ -424,7 +439,7 @@ class Simulator:
                 self.save_checkpoint(saving_date)
             next(self.timer)
         
-        return output
+        return output, output_timestep
 
     def save_checkpoint(self, saving_date):
         from june.hdf5_savers.checkpoint_saver import save_checkpoint_to_hdf5
