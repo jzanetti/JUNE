@@ -412,9 +412,6 @@ class Simulator:
                     trajectory_filename=self.trajectory_filename
                 )
 
-
-            recorded_time.append(proc_timer)
-
             mpi_comm.Barrier()
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
