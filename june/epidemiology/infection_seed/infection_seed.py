@@ -222,7 +222,8 @@ class InfectionSeed:
         time: float,
         date: datetime.datetime,
         record: Optional[Record] = None,
-        trajectory_filename: str = None
+        trajectory_filename: str = None,
+        seed_areas: list = None
     ):
         """
         Infect super areas with numer of cases given by data frame
@@ -252,6 +253,11 @@ class InfectionSeed:
                     )
                 )
             for super_area in region.super_areas:
+
+                if seed_areas is not None:
+                    if super_area.name not in seed_areas:
+                        continue
+
                 self.infect_super_area(
                     super_area=super_area,
                     cases_per_capita_per_age=cases_per_capita_per_age,
@@ -261,7 +267,7 @@ class InfectionSeed:
                 )
 
     def unleash_virus_per_day(
-        self, date: datetime, time, record: Optional[Record] = None, trajectory_filename: str = None
+        self, date: datetime, time, record: Optional[Record] = None, trajectory_filename: str = None, seed_areas: list = None
     ):
         """
         Infect super areas at a given ```date```
@@ -299,7 +305,8 @@ class InfectionSeed:
                 time=time,
                 record=record,
                 date=date,
-                trajectory_filename=trajectory_filename
+                trajectory_filename=trajectory_filename,
+                seed_areas=seed_areas
             )
             self.dates_seeded.add(date_str)
             self.last_seeded_cases = self.current_seeded_cases.copy()
@@ -387,10 +394,10 @@ class InfectionSeeds:
         self.infection_seeds = infection_seeds
 
     def unleash_virus_per_day(
-        self, date: datetime, time, record: Optional[Record] = None, trajectory_filename: str = None
+        self, date: datetime, time, record: Optional[Record] = None, trajectory_filename: str = None, seed_areas: str = None
     ):
         for seed in self.infection_seeds:
-            seed.unleash_virus_per_day(date=date, record=record, time=time, trajectory_filename=trajectory_filename)
+            seed.unleash_virus_per_day(date=date, record=record, time=time, trajectory_filename=trajectory_filename, seed_areas=seed_areas)
 
     def __iter__(self):
         return iter(self.infection_seeds)
