@@ -39,7 +39,7 @@ class ActivityManager:
         timer,
         all_activities,
         activity_to_super_groups: dict,
-        seed_areas,
+        seed_super_area,
         record: Optional[Record] = None,
         leisure: Optional[Leisure] = None,
         travel: Optional[Travel] = None,
@@ -53,7 +53,7 @@ class ActivityManager:
         self.travel = travel
         self.all_activities = all_activities
 
-        self.seed_areas = seed_areas
+        self.seed_super_area = seed_super_area
 
         self.activity_to_super_group_dict = {
             "medical_facility": activity_to_super_groups.get("medical_facility", []),
@@ -106,6 +106,7 @@ class ActivityManager:
             leisure=leisure,
             travel=travel,
             record=record,
+            seed_super_area = config["seed"]["seed_super_area"]
         )
 
     @staticmethod

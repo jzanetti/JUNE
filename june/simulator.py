@@ -410,7 +410,7 @@ class Simulator:
                 self.epidemiology.infection_seeds_timestep(
                     self.timer, record=self.record,
                     trajectory_filename=self.trajectory_filename,
-                    seed_areas=self.activity_manager.seed_areas
+                    seed_areas=self.activity_manager.seed_super_area
                 )
 
             mpi_comm.Barrier()
