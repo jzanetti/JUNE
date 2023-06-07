@@ -372,10 +372,10 @@ class Simulator:
                 f"Current rank {mpi_rank}\n"
             )
 
-        if save_debug and (self.timer.date not in recorded_time):
+        if save_debug and (self.timer.date.strftime('%Y%m%d') not in recorded_time):
 
             cur_path = join(
-                workdir, "debug", f"world_{self.timer.date.strftime('%Y%m%dT%H%M')}.pickle"
+                workdir, "debug", f"world_{self.timer.date.strftime('%Y%m%d')}.pickle"
             )
 
             if not exists(dirname(cur_path)):
