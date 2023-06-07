@@ -235,7 +235,7 @@ class Simulator:
             person.busy = False
             person.subgroups.leisure = None
 
-    def do_timestep(self, workdir, save_debug):
+    def do_timestep(self, workdir, recorded_time, save_debug):
         """
         Perform a time step in the simulation. First, ActivityManager is called
         to send people to the corresponding subgroups according to the current daytime.
@@ -372,7 +372,8 @@ class Simulator:
                 f"Current rank {mpi_rank}\n"
             )
 
-        if save_debug:
+        if save_debug and (self.timer.date not in recorded_time):
+
             cur_path = join(
                 workdir, "debug", f"world_{self.timer.date.strftime('%Y%m%dT%H%M')}.pickle"
             )
@@ -409,7 +410,6 @@ class Simulator:
             )
 
         output = {}
-        output_timestep = {}
         recorded_time = []
         while self.timer.date < self.timer.final_date:
 
@@ -426,7 +426,7 @@ class Simulator:
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
 
-            self.do_timestep(workdir, save_debug)
+            self.do_timestep(workdir, recorded_time, save_debug)
 
             if proc_timer not in recorded_time:
                 output[self.timer.date] = deepcopy(self.world)
@@ -444,7 +444,7 @@ class Simulator:
                 self.save_checkpoint(saving_date)
             next(self.timer)
         
-        return output, output_timestep
+        return output
 
     def save_checkpoint(self, saving_date):
         from june.hdf5_savers.checkpoint_saver import save_checkpoint_to_hdf5
