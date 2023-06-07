@@ -22,6 +22,10 @@ from june.world import World
 from june.mpi_setup import mpi_comm, mpi_size, mpi_rank
 from copy import deepcopy
 
+from os.path import join, dirname, exists
+from os import makedirs
+from cloudpickle import dump as cloudpickle_dump
+
 default_config_filename = paths.configs_path / "config_example.yaml"
 
 output_logger = logging.getLogger("simulator")
@@ -231,7 +235,7 @@ class Simulator:
             person.busy = False
             person.subgroups.leisure = None
 
-    def do_timestep(self, save_timestep):
+    def do_timestep(self, workdir, save_debug):
         """
         Perform a time step in the simulation. First, ActivityManager is called
         to send people to the corresponding subgroups according to the current daytime.
@@ -368,11 +372,18 @@ class Simulator:
                 f"Current rank {mpi_rank}\n"
             )
 
-        # remove everyone from their active groups
-        proc_world = None
-        if save_timestep:
-            proc_world = deepcopy(self.world)
+        if save_debug:
+            cur_path = join(
+                workdir, "debug", f"world_{self.timer.date.strftime('%Y%m%dT%H%M')}.pickle"
+            )
 
+            if not exists(dirname(cur_path)):
+                makedirs(dirname(cur_path))
+
+            with open(cur_path, "wb") as fid:
+                cloudpickle_dump({self.timer.date: self.world}, fid)
+
+        # remove everyone from their active groups
         self.clear_world()
         tock, tockw = perf_counter(), wall_clock()
         output_logger.info(
@@ -381,9 +392,7 @@ class Simulator:
         )
         mpi_logger.info(f"{self.timer.date},{mpi_rank},timestep,{tock-tick_s}")
 
-        return proc_world
-
-    def run(self, save_timestep: bool = False):
+    def run(self, workdir: str, save_debug: bool = False):
         """
         Run simulation with n_seed initial infections
         """
@@ -416,13 +425,11 @@ class Simulator:
             mpi_comm.Barrier()
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
-            proc_world = self.do_timestep(save_timestep)
+
+            self.do_timestep(workdir, save_debug)
 
             if proc_timer not in recorded_time:
                 output[self.timer.date] = deepcopy(self.world)
-
-                if save_timestep:
-                    output_timestep[self.timer.date] = deepcopy(proc_world)
                 recorded_time.append(proc_timer)
 
             if (
