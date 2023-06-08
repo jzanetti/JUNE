@@ -409,7 +409,6 @@ class Simulator:
                 activity_manager=self.activity_manager,
             )
 
-        output = {}
         recorded_time = []
         while self.timer.date < self.timer.final_date:
 
@@ -429,7 +428,18 @@ class Simulator:
             self.do_timestep(workdir, recorded_time, save_debug)
 
             if proc_timer not in recorded_time:
-                output[self.timer.date] = deepcopy(self.world)
+                
+                cur_path = join(
+                    workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d')}.pickle"
+                )
+
+                output_logger.info(f"Writing output to {self.timer.date.strftime('%Y%m%d')} ...")
+
+                if not exists(dirname(cur_path)):
+                    makedirs(dirname(cur_path))
+
+                with open(cur_path, "wb") as fid:
+                    cloudpickle_dump({self.timer.date: self.world}, fid)
                 recorded_time.append(proc_timer)
 
             if (
@@ -443,8 +453,6 @@ class Simulator:
                 )
                 self.save_checkpoint(saving_date)
             next(self.timer)
-        
-        return output
 
     def save_checkpoint(self, saving_date):
         from june.hdf5_savers.checkpoint_saver import save_checkpoint_to_hdf5
