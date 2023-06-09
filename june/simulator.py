@@ -20,11 +20,10 @@ from june.time import Timer
 from june.records import Record
 from june.world import World
 from june.mpi_setup import mpi_comm, mpi_size, mpi_rank
-from copy import deepcopy
 
 from os.path import join, dirname, exists
 from os import makedirs
-from cloudpickle import dump as cloudpickle_dump
+from june.utils.june2df import world_person2df
 
 default_config_filename = paths.configs_path / "config_example.yaml"
 
@@ -430,7 +429,7 @@ class Simulator:
             if proc_timer not in recorded_time:
                 
                 cur_path = join(
-                    workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d')}.pickle"
+                    workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d')}.parquet"
                 )
 
                 output_logger.info(f"Writing output to {self.timer.date.strftime('%Y%m%d')} ...")
@@ -438,8 +437,8 @@ class Simulator:
                 if not exists(dirname(cur_path)):
                     makedirs(dirname(cur_path))
 
-                with open(cur_path, "wb") as fid:
-                    cloudpickle_dump({self.timer.date: self.world}, fid)
+                df = world_person2df(self.world.people, time=self.timer.date)
+                df.to_parquet(cur_path)
                 recorded_time.append(proc_timer)
 
             if (
