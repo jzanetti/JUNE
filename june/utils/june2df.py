@@ -121,6 +121,7 @@ def world_person2df(world_input2, time=None):
         "time_of_infection": [],
         "intensive_care": [],
         "symptoms_trajectory": [],
+        "symptoms": [],
         "dead": [],
     }
 
@@ -208,12 +209,11 @@ def world_person2df(world_input2, time=None):
             for proc_traj in proc_person.symptoms.trajectory:
                 symptoms_trajectory.append((proc_traj[0], proc_traj[1].name))
 
-            person_info["symptoms_trajectory"].append(
-                # proc_person.symptoms.trajectory
-                str(symptoms_trajectory)
-            )
+            person_info["symptoms_trajectory"].append(str(symptoms_trajectory))
+            person_info["symptoms"].append(proc_person.symptoms.tag.name)
         else:
             person_info["symptoms_trajectory"].append(None)
+            person_info["symptoms"].append(None)
 
         if proc_person.work_super_area is not None:
             person_info["work_super_area"].append(proc_person.work_super_area.name)
