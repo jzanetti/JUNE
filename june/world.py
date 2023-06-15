@@ -73,6 +73,7 @@ class World:
         self.config_file = None
         self.policy_config_file = None
         self.areas_map_path = None
+        self.leisure = None
 
     def __iter__(self):
         ret = []
