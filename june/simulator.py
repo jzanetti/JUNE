@@ -380,8 +380,8 @@ class Simulator:
             if not exists(dirname(cur_path)):
                 makedirs(dirname(cur_path))
 
-            with open(cur_path, "wb") as fid:
-                cloudpickle_dump({self.timer.date: self.world}, fid)
+            #with open(cur_path, "wb") as fid:
+            #    cloudpickle_dump({self.timer.date: self.world}, fid)
 
         # remove everyone from their active groups
         self.clear_world()
@@ -411,7 +411,7 @@ class Simulator:
         recorded_time = []
         while self.timer.date < self.timer.final_date:
 
-            proc_timer = self.timer.date.strftime("%Y%m%d")
+            proc_timer = self.timer.date.strftime("%Y%m%d%H")
 
             if self.epidemiology:
                 self.epidemiology.infection_seeds_timestep(
@@ -429,10 +429,10 @@ class Simulator:
             if proc_timer not in recorded_time:
                 
                 cur_path = join(
-                    workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d')}.parquet"
+                    workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d%H')}.parquet"
                 )
 
-                output_logger.info(f"Writing output to {self.timer.date.strftime('%Y%m%d')} ...")
+                output_logger.info(f"Writing output to {self.timer.date.strftime('%Y%m%d%H')} ...")
 
                 if not exists(dirname(cur_path)):
                     makedirs(dirname(cur_path))
