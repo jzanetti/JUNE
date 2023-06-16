@@ -162,8 +162,8 @@ def world_person2df(world_input2, time=None):
             if getattr(proc_person.subgroups, subgroup_key) is not None:
                 subgroup_name.append(subgroup_key)
         if len(subgroup_name) == 0:
-            subgroup_name = None
-        person_info["subgroup_or_activity"].append(subgroup_name)
+            subgroup_name = []
+        person_info["subgroup_or_activity"].append(", ".join(subgroup_name))
 
         try:
             residence_group_type = proc_person.residence.group.type
