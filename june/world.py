@@ -25,6 +25,7 @@ possible_groups = [
     "pubs",
     "groceries",
     "cinemas",
+    "gyms"
 ]
 
 
