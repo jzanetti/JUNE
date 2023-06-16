@@ -234,7 +234,7 @@ class Simulator:
             person.busy = False
             person.subgroups.leisure = None
 
-    def do_timestep(self, workdir, recorded_time, save_debug):
+    def do_timestep(self, workdir, save_debug):
         """
         Perform a time step in the simulation. First, ActivityManager is called
         to send people to the corresponding subgroups according to the current daytime.
@@ -371,17 +371,18 @@ class Simulator:
                 f"Current rank {mpi_rank}\n"
             )
 
-        if save_debug and (self.timer.date.strftime('%Y%m%d') not in recorded_time):
-
+        if save_debug:
             cur_path = join(
-                workdir, "debug", f"world_{self.timer.date.strftime('%Y%m%d')}.pickle"
+                workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d%H')}.parquet"
             )
 
             if not exists(dirname(cur_path)):
                 makedirs(dirname(cur_path))
 
-            #with open(cur_path, "wb") as fid:
-            #    cloudpickle_dump({self.timer.date: self.world}, fid)
+            output_logger.info(f"Writing output to {self.timer.date.strftime('%Y%m%d%H')} ...")
+
+            df = world_person2df(self.world.people, time=self.timer.date)
+            df.to_parquet(cur_path)
 
         # remove everyone from their active groups
         self.clear_world()
@@ -408,7 +409,7 @@ class Simulator:
                 activity_manager=self.activity_manager,
             )
 
-        recorded_time = []
+        # recorded_time = []
         while self.timer.date < self.timer.final_date:
 
             proc_timer = self.timer.date.strftime("%Y%m%d%H")
@@ -424,8 +425,9 @@ class Simulator:
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
 
-            self.do_timestep(workdir, recorded_time, save_debug)
-
+            self.do_timestep(workdir, save_debug)
+            
+            """
             if proc_timer not in recorded_time:
                 
                 cur_path = join(
@@ -440,6 +442,7 @@ class Simulator:
                 df = world_person2df(self.world.people, time=self.timer.date)
                 df.to_parquet(cur_path)
                 recorded_time.append(proc_timer)
+            """
 
             if (
                 self.timer.date.date() in self.checkpoint_save_dates
