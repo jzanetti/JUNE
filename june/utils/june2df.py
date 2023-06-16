@@ -153,7 +153,7 @@ def world_person2df(world_input2, time=None):
         person_info["lockdown_status"].append(proc_person.lockdown_status)
         person_info["comorbidity"].append(proc_person.comorbidity)
         person_info["busy"].append(proc_person.busy)
-
+        """
         subgroup_name = []
         for subgroup_key in dir(proc_person.subgroups):
             if subgroup_key.startswith("__") or subgroup_key == "iter":
@@ -166,7 +166,8 @@ def world_person2df(world_input2, time=None):
         # if len(subgroup_name) == 0:
         #    subgroup_name = []
         person_info["subgroup_or_activity"].append(", ".join(subgroup_name))
-
+        """
+        person_info["subgroup_or_activity"].append(proc_person.cur_activity)
         try:
             residence_group_type = proc_person.residence.group.type
         except AttributeError:

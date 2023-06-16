@@ -253,6 +253,7 @@ class ActivityManager:
         to_send_abroad = MovablePeople()
         counter = 0
         for person in self.world.people:
+            person.cur_activity = ""
             counter += 1
             if person.dead or person.busy:
                 continue
