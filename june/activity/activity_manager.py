@@ -304,6 +304,7 @@ class ActivityManager:
                     # this person goes to another MPI domain
                     return subgroup
 
+                person.cur_activity = subgroup.spec
                 subgroup.append(person)
                 return
         raise SimulatorError(
