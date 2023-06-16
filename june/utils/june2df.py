@@ -160,9 +160,11 @@ def world_person2df(world_input2, time=None):
                 continue
 
             if getattr(proc_person.subgroups, subgroup_key) is not None:
-                subgroup_name.append(subgroup_key)
-        if len(subgroup_name) == 0:
-            subgroup_name = []
+                # subgroup_name.append(subgroup_key)
+                if getattr(proc_person, subgroup_key).contains_people:
+                    subgroup_name.append(subgroup_key)
+        # if len(subgroup_name) == 0:
+        #    subgroup_name = []
         person_info["subgroup_or_activity"].append(", ".join(subgroup_name))
 
         try:
