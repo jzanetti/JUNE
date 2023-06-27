@@ -29,7 +29,8 @@ def generate_leisure_for_world(
     pub_config_filename: str = None,
     gym_config_filename: str = None,
     cinema_config_filename: str = None,
-    grocery_config_filename: str = None):
+    grocery_config_filename: str = None,
+    household_vists_config_filename: str = None):
     """
     Generates an instance of the leisure class for the specified geography and leisure groups.
 
@@ -85,7 +86,7 @@ def generate_leisure_for_world(
             )
         leisure_distributors[
             "residence_visits"
-        ] = ResidenceVisitsDistributor.from_config(daytypes=daytypes)
+        ] = ResidenceVisitsDistributor.from_config(daytypes=daytypes, config_filename=household_vists_config_filename)
     leisure = Leisure(leisure_distributors=leisure_distributors, regions=world.regions)
     return leisure
 
@@ -96,7 +97,8 @@ def generate_leisure_for_config(
     pub_config_filename: str = None,
     gym_config_filename: str = None,
     cinema_config_filename: str = None,
-    grocery_config_filename: str = None):
+    grocery_config_filename: str = None,
+    household_vists_config_filename: str = None):
     """
     Generates an instance of the leisure class for the specified geography and leisure groups.
     Parameters
@@ -123,7 +125,8 @@ def generate_leisure_for_config(
         pub_config_filename = pub_config_filename,
         gym_config_filename = gym_config_filename,
         cinema_config_filename = cinema_config_filename,
-        grocery_config_filename = grocery_config_filename
+        grocery_config_filename = grocery_config_filename,
+        household_vists_config_filename=household_vists_config_filename
     )
     return leisure_instance
 
