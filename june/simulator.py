@@ -130,7 +130,7 @@ class Simulator:
             "sex": [],
             "ethnicity": [],
             "area": [],
-            "activity_group": [],
+            "group": [],
             "spec": [],
         }
 
@@ -466,22 +466,6 @@ class Simulator:
 
             self.do_timestep(workdir, save_debug, save_interaction)
             
-            """
-            if proc_timer not in recorded_time:
-                
-                cur_path = join(
-                    workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d%H')}.parquet"
-                )
-
-                output_logger.info(f"Writing output to {self.timer.date.strftime('%Y%m%d%H')} ...")
-
-                if not exists(dirname(cur_path)):
-                    makedirs(dirname(cur_path))
-
-                df = world_person2df(self.world.people, time=self.timer.date)
-                df.to_parquet(cur_path)
-                recorded_time.append(proc_timer)
-            """
 
             if (
                 self.timer.date.date() in self.checkpoint_save_dates
@@ -494,6 +478,17 @@ class Simulator:
                 )
                 self.save_checkpoint(saving_date)
             next(self.timer)
+
+        if save_interaction:
+            from pandas import DataFrame
+
+            df = DataFrame(self.interaction_output)
+            df.to_parquet(
+                join(
+                    workdir,
+                    "interaction_output.parquet"
+                )
+            )
 
     def save_checkpoint(self, saving_date):
         from june.hdf5_savers.checkpoint_saver import save_checkpoint_to_hdf5
