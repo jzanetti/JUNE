@@ -449,7 +449,13 @@ class Simulator:
                 activity_manager=self.activity_manager,
             )
 
-        while self.timer.date < self.timer.final_date:
+        final_date = self.timer.final_date
+        if save_interaction:
+            from datetime import timedelta
+
+            final_date = self.timer.date + timedelta(days=7)
+
+        while self.timer.date < final_date:
 
             proc_timer = self.timer.date.strftime("%Y%m%d%H")
 
