@@ -124,6 +124,17 @@ class Simulator:
             self.record.static_data(world=world)
         self.trajectory_filename = trajectory_filename
 
+        self.interaction_output = {
+            "id": [],
+            "age": [],
+            "sex": [],
+            "ethnicity": [],
+            "area": [],
+            "activity_group": [],
+            "spec": [],
+        }
+
+
     @classmethod
     def from_file(
         cls,
@@ -234,7 +245,7 @@ class Simulator:
             person.busy = False
             person.subgroups.leisure = None
 
-    def do_timestep(self, workdir, save_debug, recorded_interactions):
+    def do_timestep(self, workdir, save_debug, save_interaction):
         """
         Perform a time step in the simulation. First, ActivityManager is called
         to send people to the corresponding subgroups according to the current daytime.
@@ -384,8 +395,8 @@ class Simulator:
             df = world_person2df(self.world.people, time=self.timer.date)
             df.to_parquet(cur_path)
 
-        if isinstance(recorded_interactions, dict):
-            recorded_interactions = self.record_interaction(recorded_interactions)
+        if save_interaction:
+            self.record_interaction()
 
         # remove everyone from their active groups
         self.clear_world()
@@ -396,10 +407,8 @@ class Simulator:
         )
         mpi_logger.info(f"{self.timer.date},{mpi_rank},timestep,{tock-tick_s}")
 
-        return recorded_interactions
 
-
-    def record_interaction(self, interaction_output: dict):
+    def record_interaction(self):
         subgroups_all = [
             "residence",
             "primary_activity",
@@ -415,15 +424,13 @@ class Simulator:
                 proc_info = getattr(proc_people_subgroup, proc_subgroup)
                 if proc_info is not None:
                     for proc_person in proc_info.people:
-                        interaction_output["id"].append(proc_person.id)
-                        interaction_output["age"].append(proc_person.age)
-                        interaction_output["sex"].append(proc_person.sex)
-                        interaction_output["ethnicity"].append(proc_person.ethnicity)
-                        interaction_output["area"].append(proc_person.area.name)
-                        interaction_output["activity_group"].append(proc_info.group.name)
-                        interaction_output["activity_spec"].append(proc_info.spec)
-
-        return interaction_output
+                        self.interaction_output["id"].append(proc_person.id)
+                        self.interaction_output["age"].append(proc_person.age)
+                        self.interaction_output["sex"].append(proc_person.sex)
+                        self.interaction_output["ethnicity"].append(proc_person.ethnicity)
+                        self.interaction_output["area"].append(proc_person.area.name)
+                        self.interaction_output["group"].append(proc_info.group.name)
+                        self.interaction_output["spec"].append(proc_info.spec)
 
 
     def run(self, workdir: str, save_debug: bool = False, save_interaction: bool = False):
@@ -442,18 +449,6 @@ class Simulator:
                 activity_manager=self.activity_manager,
             )
 
-        interaction_output = None
-        if save_interaction:
-            interaction_output = {
-                "id": [],
-                "age": [],
-                "sex": [],
-                "ethnicity": [],
-                "area": [],
-                "activity_group": [],
-                "spec": [],
-            }
-
         while self.timer.date < self.timer.final_date:
 
             proc_timer = self.timer.date.strftime("%Y%m%d%H")
@@ -469,7 +464,7 @@ class Simulator:
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
 
-            self.do_timestep(workdir, save_debug, interaction_output)
+            self.do_timestep(workdir, save_debug, save_interaction)
             
             """
             if proc_timer not in recorded_time:
