@@ -489,6 +489,7 @@ class Simulator:
             from pandas import DataFrame
 
             df = DataFrame(self.interaction_output)
+            df = df.drop_duplicates()
             df.to_parquet(
                 join(
                     workdir,
