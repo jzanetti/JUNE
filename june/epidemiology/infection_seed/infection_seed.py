@@ -161,8 +161,8 @@ class InfectionSeed:
             account_secondary_infections=account_secondary_infections,
         )
 
-    def infect_person(self, person, time, record):
-        self.infection_selector.infect_person_at_time(person=person, time=time)
+    def infect_person(self, person, time, record, trajectory_filename=None):
+        self.infection_selector.infect_person_at_time(person=person, time=time, trajectory_filename=trajectory_filename)
         if record:
             record.accumulate(
                 table_name="infections",
@@ -175,7 +175,7 @@ class InfectionSeed:
             )
 
     def infect_super_area(
-        self, super_area, cases_per_capita_per_age, time, record=None
+        self, super_area, cases_per_capita_per_age, time, record=None, trajectory_filename: str = None
     ):
         people = super_area.people
         infection_id = self.infection_selector.infection_class.infection_id()
@@ -191,7 +191,7 @@ class InfectionSeed:
             for person in susceptible:
                 prob = cases_per_capita_per_age.loc[age] * rescaling
                 if random() < prob:
-                    self.infect_person(person=person, time=time, record=record)
+                    self.infect_person(person=person, time=time, record=record, trajectory_filename=trajectory_filename)
                     self.current_seeded_cases[super_area.region.name] += 1
                     if time < 0:
                         self.bring_infection_up_to_date(
@@ -222,6 +222,8 @@ class InfectionSeed:
         time: float,
         date: datetime.datetime,
         record: Optional[Record] = None,
+        trajectory_filename: str = None,
+        seed_areas: list = None
     ):
         """
         Infect super areas with numer of cases given by data frame
@@ -251,15 +253,21 @@ class InfectionSeed:
                     )
                 )
             for super_area in region.super_areas:
+
+                if seed_areas is not None:
+                    if super_area.name not in seed_areas:
+                        continue
+
                 self.infect_super_area(
                     super_area=super_area,
                     cases_per_capita_per_age=cases_per_capita_per_age,
                     time=time,
                     record=record,
+                    trajectory_filename=trajectory_filename
                 )
 
     def unleash_virus_per_day(
-        self, date: datetime, time, record: Optional[Record] = None
+        self, date: datetime, time, record: Optional[Record] = None, trajectory_filename: str = None, seed_areas: list = None
     ):
         """
         Infect super areas at a given ```date```
@@ -297,6 +305,8 @@ class InfectionSeed:
                 time=time,
                 record=record,
                 date=date,
+                trajectory_filename=trajectory_filename,
+                seed_areas=seed_areas
             )
             self.dates_seeded.add(date_str)
             self.last_seeded_cases = self.current_seeded_cases.copy()
@@ -384,10 +394,10 @@ class InfectionSeeds:
         self.infection_seeds = infection_seeds
 
     def unleash_virus_per_day(
-        self, date: datetime, time, record: Optional[Record] = None
+        self, date: datetime, time, record: Optional[Record] = None, trajectory_filename: str = None, seed_areas: str = None
     ):
         for seed in self.infection_seeds:
-            seed.unleash_virus_per_day(date=date, record=record, time=time)
+            seed.unleash_virus_per_day(date=date, record=record, time=time, trajectory_filename=trajectory_filename, seed_areas=seed_areas)
 
     def __iter__(self):
         return iter(self.infection_seeds)

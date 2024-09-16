@@ -145,7 +145,7 @@ class HealthIndexGenerator:
                 probabilities = self.apply_effective_multiplier(
                     probabilities, effective_multiplier
                 )
-        return np.cumsum(probabilities)
+        return np.nancumsum(probabilities)
 
     def apply_effective_multiplier(self, probabilities, effective_multiplier):
         modified_probabilities = np.zeros_like(probabilities)
@@ -154,16 +154,25 @@ class HealthIndexGenerator:
             1 - probabilities.sum()
         )
         modified_probability_severe = probability_severe * effective_multiplier
-        modified_probability_mild = 1.0 - modified_probability_severe
+        if probability_mild == 0.0: # just in case if the severe rate is 100%
+            k_mild = 1.0
+        else:
+            modified_probability_mild = 1.0 - modified_probability_severe
+            k_mild = modified_probability_mild / probability_mild
+
         modified_probabilities[: self.max_mild_symptom_tag] = (
             probabilities[: self.max_mild_symptom_tag]
-            * modified_probability_mild
-            / probability_mild
+            * k_mild
         )
+
+        if probability_severe == 0.0: # just in case if the severe rate is 0.0%
+            k_severe = 1.0
+        else:
+            k_severe = modified_probability_severe / probability_severe
+
         modified_probabilities[self.max_mild_symptom_tag :] = (
             probabilities[self.max_mild_symptom_tag :]
-            * modified_probability_severe
-            / probability_severe
+            * k_severe
         )
         return modified_probabilities
 
@@ -188,8 +197,8 @@ class HealthIndexGenerator:
             p[population][sex][age][0] = asymptomatic_rate  # recovers as asymptomatic
             p[population][sex][age][1] = mild_rate  # recovers as mild
             p[population][sex][age][2] = severe_rate  # recovers as severe
-            p[population][sex][age][3] = (
-                hospital_rate - hospital_dead_rate
+            p[population][sex][age][3] = max(
+                hospital_rate - hospital_dead_rate, 0
             )  # recovers in the ward
             p[population][sex][age][4] = max(
                 icu_rate - icu_dead_rate, 0
@@ -203,7 +212,14 @@ class HealthIndexGenerator:
             to_keep_sum = p[population][sex][age][5:].sum()
             to_adjust_sum = p[population][sex][age][:5].sum()
             target_adjust_sum = max(1 - to_keep_sum, 0)
-            p[population][sex][age][:5] *= target_adjust_sum / to_adjust_sum
+
+            k = target_adjust_sum / to_adjust_sum
+
+            # e.g., if the death rate is 100% ..., there is no need to adjust anything
+            if np.isnan(k):
+                k = 1.0
+
+            p[population][sex][age][:5] *= k
 
     def _get_probabilities(self, max_age=99):
         n_outcomes = 8

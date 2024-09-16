@@ -24,12 +24,12 @@ class Symptoms:
     characteristic timings.
     """
 
-    def __init__(self, health_index=None):
+    def __init__(self, health_index=None, trajectory_filename=None):
         self.max_tag = None
         self.tag = SymptomTag.exposed
         self.max_severity = random()
         self.trajectory = self._make_symptom_trajectory(
-            health_index
+            health_index, trajectory_filename
         )  # this also sets max_tag
         self.stage = 0
         self.time_of_symptoms_onset = self._compute_time_from_infection_to_symptoms()
@@ -44,11 +44,22 @@ class Symptoms:
                 return None
         return symptoms_onset
 
-    def _make_symptom_trajectory(self, health_index):
+    def _make_symptom_trajectory(self, health_index, trajectory_filename):
         if health_index is None:
             return [(0, SymptomTag(0))]
-        trajectory_maker = TrajectoryMakers.from_file()
+        trajectory_maker = TrajectoryMakers.from_file(config_path=trajectory_filename)
         index_max_symptoms_tag = np.searchsorted(health_index, self.max_severity)
+
+        if index_max_symptoms_tag >= len(health_index):
+            # if index_max_symptoms_tag larger than the length of health index, we use the nearest one
+            _, nearest_index = min(
+                health_index, key=lambda health_index: abs(health_index - self.max_severity)
+            ), min(
+                range(len(health_index)), key=lambda i: abs(health_index[i] - self.max_severity)
+            )
+
+            index_max_symptoms_tag = nearest_index
+
         self.max_tag = SymptomTag(index_max_symptoms_tag)
         return trajectory_maker[self.max_tag]
 

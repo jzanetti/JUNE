@@ -350,11 +350,11 @@ class Demography:
             A demography representing the super area
         """
         area_names = area_names
-        age_structure_path = data_path / "age_structure_single_year.csv"
-        female_fraction_path = data_path / "female_ratios_per_age_bin.csv"
-        ethnicity_structure_path = data_path / "ethnicity_structure.csv"
-        m_comorbidity_path = data_path / "uk_male_comorbidities.csv"
-        f_comorbidity_path = data_path / "uk_female_comorbidities.csv"
+        age_structure_path = data_path["age_profile"]
+        female_fraction_path = data_path["gender_profile"]
+        ethnicity_structure_path = data_path["ethnicity_profile"]
+        m_comorbidity_path = data_path["comorbidities"]["male"]
+        f_comorbidity_path = data_path["comorbidities"]["female"]
         age_sex_generators = _load_age_and_sex_generators(
             age_structure_path,
             female_fraction_path,

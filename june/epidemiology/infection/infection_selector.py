@@ -80,7 +80,7 @@ class InfectionSelector:
     def infection_id(self):
         return self.infection_class.infection_id()
 
-    def infect_person_at_time(self, person: "Person", time: float):
+    def infect_person_at_time(self, person: "Person", time: float, trajectory_filename: str = None):
         """
         Infects a person at a given time.
 
@@ -91,10 +91,10 @@ class InfectionSelector:
         time:
             time at which infection happens
         """
-        person.infection = self._make_infection(person, time)
+        person.infection = self._make_infection(person, time, trajectory_filename)
         person.immunity.add_immunity(person.infection.immunity_ids())
 
-    def _make_infection(self, person: "Person", time: float):
+    def _make_infection(self, person: "Person", time: float, trajectory_filename: str):
         """
         Generates the symptoms and infectiousness of the person being infected
 
@@ -105,7 +105,7 @@ class InfectionSelector:
         time:
             time at which infection happens
         """
-        symptoms = self._select_symptoms(person)
+        symptoms = self._select_symptoms(person, trajectory_filename)
         time_to_symptoms_onset = symptoms.time_exposed
         transmission = self._select_transmission(
             time_to_symptoms_onset=time_to_symptoms_onset,
@@ -243,7 +243,7 @@ class InfectionSelector:
         else:
             raise NotImplementedError("This transmission type has not been implemented")
 
-    def _select_symptoms(self, person: "Person") -> "Symptoms":
+    def _select_symptoms(self, person: "Person", trajectory_filename: str) -> "Symptoms":
         """
         Select the symptoms that a given person has, and how they will evolve
         in the future
@@ -258,7 +258,7 @@ class InfectionSelector:
         health_index = self.health_index_generator(
             person, infection_id=self.infection_id
         )
-        return Symptoms(health_index=health_index)
+        return Symptoms(health_index=health_index, trajectory_filename=trajectory_filename)
 
 
 class InfectionSelectors:
@@ -281,7 +281,7 @@ class InfectionSelectors:
         return ret
 
     def infect_person_at_time(
-        self, person: "Person", time: float, infection_id: int = Covid19.infection_id()
+        self, person: "Person", time: float, infection_id: int = Covid19.infection_id(), trajectory_filename: str = None
     ):
         """
         Infects a person at a given time with the given infection_class.
@@ -296,7 +296,7 @@ class InfectionSelectors:
             time at which infection happens
         """
         selector = self.infection_id_to_selector[infection_id]
-        selector.infect_person_at_time(person=person, time=time)
+        selector.infect_person_at_time(person=person, time=time, trajectory_filename=trajectory_filename)
 
     def __iter__(self):
         return iter(self._infection_selectors)

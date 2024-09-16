@@ -30,9 +30,13 @@ class Travel:
         city_super_areas_filename=default_cities_filename,
         city_stations_filename=default_city_stations_config_filename,
         commute_config_filename=default_commute_config_filename,
+        travel_mode_filename = None,
+        public_or_private_transport = None
     ):
         self.city_super_areas_filename = city_super_areas_filename
         self.city_stations_filename = city_stations_filename
+        self.travel_mode_filename = travel_mode_filename
+        self.public_or_private_transport = public_or_private_transport
         with open(commute_config_filename) as f:
             self.commute_config = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -47,6 +51,11 @@ class Travel:
         commuters_dict = self._get_city_commuters(
             world=world, city_stations_filename=self.city_stations_filename
         )
+
+        #for super_area in commuters_dict:
+        #    if len(commuters_dict[super_area]["internal"]) == 0:
+        #        commuters_dict[super_area]["internal"] = [1]
+
         self._create_stations(
             world=world,
             commuters_dict=commuters_dict,
@@ -88,14 +97,17 @@ class Travel:
         Assigns a mode of transport (public or not) to the world's population.
         """
         logger.info("Determining people mode of transport")
-        mode_of_transport_generator = ModeOfTransportGenerator.from_file()
+        mode_of_transport_generator = ModeOfTransportGenerator.from_file(
+            filename=self.travel_mode_filename,
+            config_filename=self.public_or_private_transport
+        )
         for i, area in enumerate(world.areas):
             if i % 4000 == 0:
                 logger.info(
                     f"Mode of transport allocated in {i} of {len(world.areas)} areas."
                 )
             mode_of_transport_generator_area = (
-                mode_of_transport_generator.regional_gen_from_area(area.name)
+                mode_of_transport_generator.regional_gen_from_area(str(area.name))
             )
             for person in area.people:
                 if person.age < 18 or person.age >= 65:
@@ -189,6 +201,9 @@ class Travel:
                         n_internal_commuters / maximum_number_commuters_per_city_station
                     )
                 )
+                if n_city_stations == 0:
+                    n_city_stations = 1
+ 
                 city.city_stations = Stations.from_city_center(
                     city=city,
                     super_areas=world.super_areas,

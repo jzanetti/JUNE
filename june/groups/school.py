@@ -274,7 +274,7 @@ class Schools(Supergroup):
         area_names = [area.name for area in areas]
         if area_names is not None:
             # filter out schools that are in the area of interest
-            school_df = school_df[school_df["oa"].isin(area_names)]
+            school_df = school_df[school_df["area"].isin(area_names)]
         school_df.reset_index(drop=True, inplace=True)
         logger.info(f"There are {len(school_df)} schools in this geography.")
         return cls.build_schools_for_areas(areas, school_df)  # , **config,)
@@ -299,7 +299,7 @@ class Schools(Supergroup):
         # build schools
         schools = []
         for school_name, row in school_df.iterrows():
-            n_pupils_max = row["NOR"]
+            n_pupils_max = row["max_students"]
             school_type = row["sector"]
             if school_type is np.nan:
                 school_type = list(employee_per_clients.keys())[0]

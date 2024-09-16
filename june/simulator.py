@@ -21,6 +21,10 @@ from june.records import Record
 from june.world import World
 from june.mpi_setup import mpi_comm, mpi_size, mpi_rank
 
+from os.path import join, dirname, exists
+from os import makedirs
+from june.utils.june2df import world_person2df
+
 default_config_filename = paths.configs_path / "config_example.yaml"
 
 output_logger = logging.getLogger("simulator")
@@ -81,6 +85,7 @@ class Simulator:
         record: Optional[Record] = None,
         checkpoint_save_dates: List[datetime.date] = None,
         checkpoint_save_path: str = None,
+        trajectory_filename: str = None
     ):
         """
         Class to run an epidemic spread simulation on the world.
@@ -117,6 +122,18 @@ class Simulator:
         self.record = record
         if self.record is not None and self.record.record_static_data:
             self.record.static_data(world=world)
+        self.trajectory_filename = trajectory_filename
+
+        self.interaction_output = {
+            "id": [],
+            "age": [],
+            "sex": [],
+            "ethnicity": [],
+            "area": [],
+            "group": [],
+            "spec": [],
+        }
+
 
     @classmethod
     def from_file(
@@ -132,6 +149,7 @@ class Simulator:
         config_filename: str = default_config_filename,
         checkpoint_save_path: str = None,
         record: Optional[Record] = None,
+        trajectory_filename: str = None
     ) -> "Simulator":
 
         """
@@ -174,6 +192,7 @@ class Simulator:
             record=record,
             checkpoint_save_dates=checkpoint_save_dates,
             checkpoint_save_path=checkpoint_save_path,
+            trajectory_filename=trajectory_filename
         )
 
     @classmethod
@@ -226,7 +245,7 @@ class Simulator:
             person.busy = False
             person.subgroups.leisure = None
 
-    def do_timestep(self):
+    def do_timestep(self, workdir, save_debug, save_interaction):
         """
         Perform a time step in the simulation. First, ActivityManager is called
         to send people to the corresponding subgroups according to the current daytime.
@@ -340,6 +359,7 @@ class Simulator:
             infected_ids=infected_ids,
             infection_ids=infection_ids,
             people_from_abroad_dict=people_from_abroad_dict,
+            trajectory_filename=self.trajectory_filename
         )
 
         tick, tickw = perf_counter(), wall_clock()
@@ -362,6 +382,22 @@ class Simulator:
                 f"Current rank {mpi_rank}\n"
             )
 
+        if save_debug:
+            cur_path = join(
+                workdir, "output", f"world_{self.timer.date.strftime('%Y%m%d%H')}.parquet"
+            )
+
+            if not exists(dirname(cur_path)):
+                makedirs(dirname(cur_path))
+
+            output_logger.info(f"Writing output to {self.timer.date.strftime('%Y%m%d%H')} ...")
+
+            df = world_person2df(self.world.people, time=self.timer.date)
+            df.to_parquet(cur_path)
+
+        if save_interaction:
+            self.record_interaction()
+
         # remove everyone from their active groups
         self.clear_world()
         tock, tockw = perf_counter(), wall_clock()
@@ -371,7 +407,33 @@ class Simulator:
         )
         mpi_logger.info(f"{self.timer.date},{mpi_rank},timestep,{tock-tick_s}")
 
-    def run(self):
+
+    def record_interaction(self):
+        subgroups_all = [
+            "residence",
+            "primary_activity",
+            "medical_facility",
+            "commute",
+            "rail_travel",
+            "leisure"
+        ]
+
+        for proc_people in self.world.people:
+            proc_people_subgroup = proc_people.subgroups
+            for proc_subgroup in subgroups_all:
+                proc_info = getattr(proc_people_subgroup, proc_subgroup)
+                if proc_info is not None:
+                    for proc_person in proc_info.people:
+                        self.interaction_output["id"].append(proc_person.id)
+                        self.interaction_output["age"].append(proc_person.age)
+                        self.interaction_output["sex"].append(proc_person.sex)
+                        self.interaction_output["ethnicity"].append(proc_person.ethnicity)
+                        self.interaction_output["area"].append(proc_person.area.name)
+                        self.interaction_output["group"].append(proc_info.group.name)
+                        self.interaction_output["spec"].append(proc_info.spec)
+
+
+    def run(self, workdir: str, save_debug: bool = False, save_interaction: bool = False):
         """
         Run simulation with n_seed initial infections
         """
@@ -386,15 +448,31 @@ class Simulator:
                 epidemiology=self.epidemiology,
                 activity_manager=self.activity_manager,
             )
-        while self.timer.date < self.timer.final_date:
+
+        final_date = self.timer.final_date
+        if save_interaction:
+            from datetime import timedelta
+
+            final_date = self.timer.date + timedelta(days=7)
+
+        while self.timer.date < final_date:
+
+            proc_timer = self.timer.date.strftime("%Y%m%d%H")
+
             if self.epidemiology:
                 self.epidemiology.infection_seeds_timestep(
-                    self.timer, record=self.record
+                    self.timer, record=self.record,
+                    trajectory_filename=self.trajectory_filename,
+                    seed_areas=self.activity_manager.seed_super_area
                 )
+
             mpi_comm.Barrier()
             if mpi_rank == 0:
                 rank_logger.info("Next timestep")
-            self.do_timestep()
+
+            self.do_timestep(workdir, save_debug, save_interaction)
+            
+
             if (
                 self.timer.date.date() in self.checkpoint_save_dates
                 and (self.timer.now + self.timer.duration).is_integer()
@@ -406,6 +484,18 @@ class Simulator:
                 )
                 self.save_checkpoint(saving_date)
             next(self.timer)
+
+        if save_interaction:
+            from pandas import DataFrame
+
+            df = DataFrame(self.interaction_output)
+            df = df.drop_duplicates()
+            df.to_parquet(
+                join(
+                    workdir,
+                    "interaction_output.parquet"
+                )
+            )
 
     def save_checkpoint(self, saving_date):
         from june.hdf5_savers.checkpoint_saver import save_checkpoint_to_hdf5

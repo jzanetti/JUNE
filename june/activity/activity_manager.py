@@ -39,6 +39,7 @@ class ActivityManager:
         timer,
         all_activities,
         activity_to_super_groups: dict,
+        seed_super_area,
         record: Optional[Record] = None,
         leisure: Optional[Leisure] = None,
         travel: Optional[Travel] = None,
@@ -51,6 +52,8 @@ class ActivityManager:
         self.leisure = leisure
         self.travel = travel
         self.all_activities = all_activities
+
+        self.seed_super_area = seed_super_area
 
         self.activity_to_super_group_dict = {
             "medical_facility": activity_to_super_groups.get("medical_facility", []),
@@ -103,6 +106,7 @@ class ActivityManager:
             leisure=leisure,
             travel=travel,
             record=record,
+            seed_super_area = config["seed"]["seed_super_area"]
         )
 
     @staticmethod
@@ -249,6 +253,7 @@ class ActivityManager:
         to_send_abroad = MovablePeople()
         counter = 0
         for person in self.world.people:
+            person.cur_activity = ""
             counter += 1
             if person.dead or person.busy:
                 continue
@@ -300,6 +305,7 @@ class ActivityManager:
                     # this person goes to another MPI domain
                     return subgroup
 
+                person.cur_activity = subgroup.spec
                 subgroup.append(person)
                 return
         raise SimulatorError(

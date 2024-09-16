@@ -53,6 +53,7 @@ class Person(dataobject):
     subgroups: Activities = None
     infection: Infection = None
     immunity: Immunity = None
+    cur_activity: str or None = None  # Sijin
     # infection
     dead: bool = False
 

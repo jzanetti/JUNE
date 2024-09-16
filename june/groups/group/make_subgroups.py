@@ -215,6 +215,11 @@ class SubgroupParams:
         -------
             SubgroupParams class instance
         """
+
+        from os.path import exists
+        if not exists(config_filename):
+            return None
+
         if config_filename is None:
             config_filename = default_config_filename
         with open(config_filename) as f:

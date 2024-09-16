@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 project_directory = Path(os.path.abspath(__file__)).parent
 
-working_directory = Path(os.getcwd())
+working_directory = Path("lib/JUNE_v1.2.0")
 
 working_directory_parent = working_directory.parent
 

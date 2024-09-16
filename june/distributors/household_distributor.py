@@ -168,6 +168,7 @@ class HouseholdDistributor:
         )
         self._random_sex_rv = rv_discrete(values=((0, 1), (0.5, 0.5)))
         self._refresh_random_numbers_list(number_of_random_numbers)
+        self.household_interaction_filename = None
 
     @classmethod
     def from_file(
@@ -728,6 +729,12 @@ class HouseholdDistributor:
             Maximum number of people allowed in the household.
 
         """
+        #from june.groups.group.make_subgroups import SubgroupParams
+        #my_household= Household
+        #my_household.subgroup_params = SubgroupParams.from_file(
+        #    config_filename=self.household_interaction_filename
+        #)
+
         household = Household(
             type=type,
             max_size=max_household_size,

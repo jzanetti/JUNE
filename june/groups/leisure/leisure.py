@@ -23,7 +23,14 @@ default_config_filename = paths.configs_path / "config_example.yaml"
 logger = logging.getLogger("leisure")
 
 
-def generate_leisure_for_world(list_of_leisure_groups, world, daytypes):
+def generate_leisure_for_world(
+    list_of_leisure_groups, world, 
+    daytypes,     
+    pub_config_filename: str = None,
+    gym_config_filename: str = None,
+    cinema_config_filename: str = None,
+    grocery_config_filename: str = None,
+    household_vists_config_filename: str = None):
     """
     Generates an instance of the leisure class for the specified geography and leisure groups.
 
@@ -38,14 +45,14 @@ def generate_leisure_for_world(list_of_leisure_groups, world, daytypes):
             logger.warning("No pubs in this world/domain")
         else:
             leisure_distributors["pub"] = PubDistributor.from_config(
-                world.pubs, daytypes=daytypes
+                world.pubs, daytypes=daytypes, config_filename=pub_config_filename
             )
     if "gyms" in list_of_leisure_groups:
         if not hasattr(world, "gyms") or world.gyms is None or len(world.gyms) == 0:
             logger.warning("No gyms in this world/domain")
         else:
             leisure_distributors["gym"] = GymDistributor.from_config(
-                world.gyms, daytypes=daytypes
+                world.gyms, daytypes=daytypes, config_filename=gym_config_filename
             )
     if "cinemas" in list_of_leisure_groups:
         if (
@@ -56,7 +63,7 @@ def generate_leisure_for_world(list_of_leisure_groups, world, daytypes):
             logger.warning("No cinemas in this world/domain")
         else:
             leisure_distributors["cinema"] = CinemaDistributor.from_config(
-                world.cinemas, daytypes=daytypes
+                world.cinemas, daytypes=daytypes, config_filename=cinema_config_filename
             )
     if "groceries" in list_of_leisure_groups:
         if (
@@ -67,7 +74,7 @@ def generate_leisure_for_world(list_of_leisure_groups, world, daytypes):
             logger.warning("No groceries in this world/domain")
         else:
             leisure_distributors["grocery"] = GroceryDistributor.from_config(
-                world.groceries, daytypes=daytypes
+                world.groceries, daytypes=daytypes, config_filename=grocery_config_filename
             )
     if (
         "household_visits" in list_of_leisure_groups
@@ -79,12 +86,19 @@ def generate_leisure_for_world(list_of_leisure_groups, world, daytypes):
             )
         leisure_distributors[
             "residence_visits"
-        ] = ResidenceVisitsDistributor.from_config(daytypes=daytypes)
+        ] = ResidenceVisitsDistributor.from_config(daytypes=daytypes, config_filename=household_vists_config_filename)
     leisure = Leisure(leisure_distributors=leisure_distributors, regions=world.regions)
     return leisure
 
 
-def generate_leisure_for_config(world, config_filename=default_config_filename):
+def generate_leisure_for_config(
+    world, 
+    config_filename=default_config_filename,                   
+    pub_config_filename: str = None,
+    gym_config_filename: str = None,
+    cinema_config_filename: str = None,
+    grocery_config_filename: str = None,
+    household_vists_config_filename: str = None):
     """
     Generates an instance of the leisure class for the specified geography and leisure groups.
     Parameters
@@ -107,7 +121,12 @@ def generate_leisure_for_config(world, config_filename=default_config_filename):
             "weekend": ["Saturday", "Sunday"],
         }
     leisure_instance = generate_leisure_for_world(
-        list_of_leisure_groups, world, daytypes
+        list_of_leisure_groups, world, daytypes,
+        pub_config_filename = pub_config_filename,
+        gym_config_filename = gym_config_filename,
+        cinema_config_filename = cinema_config_filename,
+        grocery_config_filename = grocery_config_filename,
+        household_vists_config_filename=household_vists_config_filename
     )
     return leisure_instance
 
